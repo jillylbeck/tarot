@@ -91,7 +91,7 @@
     </div>
 
     <script>
-        let interpretations = {};
+        let interpretations = [];
         let lastPatronCards = "";
 
         function getRandomCards() {
@@ -101,54 +101,19 @@
             return tarotCards.sort(() => 0.5 - Math.random()).slice(0, 3);
         }
 
-        const cardMeanings = {
-                "The Fool": "New beginnings, spontaneity, free spirit.",
-                "The Magician": "Manifestation, resourcefulness, power.",
-                "The High Priestess": "Intuition, subconscious mind, mystery.",
-                "The Empress": "Nurturing, abundance, femininity.",
-                "The Emperor": "Authority, structure, father figure.",
-                "The Lovers": "Love, harmony, partnerships.",
-                "The Chariot": "Determination, control, willpower.",
-                "Strength": "Courage, inner strength, patience.",
-                "The Hermit": "Introspection, inner guidance, solitude.",
-                "Wheel of Fortune": "Luck, cycles, karma.",
-                "Justice": "Fairness, truth, law.",
-                "The Hanged Man": "Letting go, new perspectives, sacrifice.",
-                "Death": "Endings, transformation, new beginnings.",
-                "Temperance": "Balance, patience, moderation.",
-                "The Devil": "Addiction, materialism, bondage.",
-                "The Tower": "Sudden change, upheaval, chaos.",
-                "The Star": "Hope, faith, inspiration.",
-                "The Moon": "Illusions, intuition, dreams.",
-                "The Sun": "Success, joy, vitality.",
-                "Judgment": "Reflection, reckoning, awakening.",
-                "The World": "Completion, fulfillment, travel."
-            };
-
-
         function displayCards(containerId, cards) {
-                const container = document.getElementById(containerId);
-                container.innerHTML = "";
-                cards.forEach(card => {
-                    const cardDiv = document.createElement("div");
-                    cardDiv.classList.add("card");
-
-                    const label = document.createElement("p");
-                    label.innerText = card;
-                    label.style.fontWeight = "bold";
-
-                    const meaning = document.createElement("p");
-                    meaning.innerText = cardMeanings[card] || "Meaning not found.";
-                    meaning.style.fontSize = "14px";
-                    meaning.style.fontStyle = "italic";
-                    meaning.style.marginTop = "5px";
-
-                    cardDiv.appendChild(label);
-                    cardDiv.appendChild(meaning);
-                    container.appendChild(cardDiv);
-                });
-            }
-
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            cards.forEach(card => {
+                const cardDiv = document.createElement("div");
+                cardDiv.classList.add("card");
+                const label = document.createElement("p");
+                label.innerText = card;
+                label.style.fontWeight = "bold";
+                cardDiv.appendChild(label);
+                container.appendChild(cardDiv);
+            });
+        }
 
         function selectRole(role) {
             document.getElementById("readerSection").classList.add("hidden");
@@ -157,7 +122,7 @@
             
             if (role === 'reader') {
                 document.getElementById("readerSection").classList.remove("hidden");
-                const selectedCards = lastPatronCards && interpretations[lastPatronCards] ? lastPatronCards.split(", ") : getRandomCards();
+                const selectedCards = getRandomCards();
                 displayCards("readerCards", selectedCards);
             } else {
                 document.getElementById("patronSection").classList.remove("hidden");
@@ -166,9 +131,8 @@
 
         function submitInterpretation() {
             const text = document.getElementById("interpretation").value;
-            const cards = Array.from(document.querySelectorAll("#readerCards .card p"), p => p.innerText).join(", ");
             if (text.trim() !== "") {
-                interpretations[cards] = text;
+                interpretations.push(text);
                 alert("Your interpretation has entered the void.");
                 document.getElementById("interpretation").value = "";
             }
@@ -181,7 +145,8 @@
                 const selectedCards = getRandomCards();
                 lastPatronCards = selectedCards.join(", ");
                 displayCards("patronCards", selectedCards);
-                document.getElementById("matchedInterpretation").innerText = interpretations[lastPatronCards] || "No interpretation available yet.";
+                const randomReading = interpretations.length > 0 ? interpretations[Math.floor(Math.random() * interpretations.length)] : "No interpretation available yet.";
+                document.getElementById("matchedInterpretation").innerText = randomReading;
             } else {
                 alert("Please enter a question before receiving your reading.");
             }
@@ -189,6 +154,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
