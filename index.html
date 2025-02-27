@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarot Reader & Patron</title>
+    <style>
+        body {
+            font-family: 'Papyrus', fantasy;
+            text-align: center;
+            margin: 20px;
+            background: rgba(66, 16, 88, 0.824);
+            color: #f8f8f2;
+        }
+        .hidden { display: none; }
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #dda0dd;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        .card {
+            text-align: center;
+        }
+        .card p {
+            margin: 5px 0;
+            color: #ffccff;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background: #8074c5;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.446);
+        }
+        button:hover {
+            background: #6a5acd;
+        }
+        textarea {
+            width: 80%;
+            height: 80px;
+            border-radius: 5px;
+            border: 1px solid #dda0dd;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 10px;
+            font-size: 16px;
+        }
+        h1, h2, h3 {
+            font-family: 'Lucida Handwriting', cursive;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <h1> Write the Future or Hear It?</h1>
+    <button onclick="selectRole('reader')">Be a Reader</button>
+    <button onclick="selectRole('patron')">Be a Patron</button>
+    
+    <div id="readerSection" class="hidden">
+        <h2>Your Tarot Cards</h2>
+        <div id="readerCards" class="card-container"></div>
+        <h3>Reading Guide</h3>
+        <p>A three-draw reading in Tarot can be interpreted as a glimpse into the individual's life. The first card represents the person's past, the second represents their present, and the third represents their future.</p>
+        <textarea id="interpretation" placeholder="Enter your interpretation..."></textarea>
+        <br>
+        <button onclick="submitInterpretation()">Submit</button>
+    </div>
+
+    <div id="patronSection" class="hidden">
+        <h2>Your Question</h2>
+        <textarea id="patronQuestion" placeholder="Enter your question..."></textarea>
+        <br>
+        <button onclick="submitQuestion()">Submit Question</button>
+        <div id="patronReading" class="hidden">
+            <h2>Your Tarot Cards</h2>
+            <div id="patronCards" class="card-container"></div>
+            <h3>Reader's Interpretation</h3>
+            <p id="matchedInterpretation"></p>
+        </div>
+    </div>
+
+    <script>
+        let interpretations = {};
+        let lastPatronCards = "";
+
+        function getRandomCards() {
+            const tarotCards = [
+                "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Lovers", "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgment", "The World"
+            ];
+            return tarotCards.sort(() => 0.5 - Math.random()).slice(0, 3);
+        }
+
+        const cardMeanings = {
+                "The Fool": "New beginnings, spontaneity, free spirit.",
+                "The Magician": "Manifestation, resourcefulness, power.",
+                "The High Priestess": "Intuition, subconscious mind, mystery.",
+                "The Empress": "Nurturing, abundance, femininity.",
+                "The Emperor": "Authority, structure, father figure.",
+                "The Lovers": "Love, harmony, partnerships.",
+                "The Chariot": "Determination, control, willpower.",
+                "Strength": "Courage, inner strength, patience.",
+                "The Hermit": "Introspection, inner guidance, solitude.",
+                "Wheel of Fortune": "Luck, cycles, karma.",
+                "Justice": "Fairness, truth, law.",
+                "The Hanged Man": "Letting go, new perspectives, sacrifice.",
+                "Death": "Endings, transformation, new beginnings.",
+                "Temperance": "Balance, patience, moderation.",
+                "The Devil": "Addiction, materialism, bondage.",
+                "The Tower": "Sudden change, upheaval, chaos.",
+                "The Star": "Hope, faith, inspiration.",
+                "The Moon": "Illusions, intuition, dreams.",
+                "The Sun": "Success, joy, vitality.",
+                "Judgment": "Reflection, reckoning, awakening.",
+                "The World": "Completion, fulfillment, travel."
+            };
+
+
+        function displayCards(containerId, cards) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = "";
+                cards.forEach(card => {
+                    const cardDiv = document.createElement("div");
+                    cardDiv.classList.add("card");
+
+                    const label = document.createElement("p");
+                    label.innerText = card;
+                    label.style.fontWeight = "bold";
+
+                    const meaning = document.createElement("p");
+                    meaning.innerText = cardMeanings[card] || "Meaning not found.";
+                    meaning.style.fontSize = "14px";
+                    meaning.style.fontStyle = "italic";
+                    meaning.style.marginTop = "5px";
+
+                    cardDiv.appendChild(label);
+                    cardDiv.appendChild(meaning);
+                    container.appendChild(cardDiv);
+                });
+            }
+
+
+        function selectRole(role) {
+            document.getElementById("readerSection").classList.add("hidden");
+            document.getElementById("patronSection").classList.add("hidden");
+            document.getElementById("patronReading").classList.add("hidden");
+            
+            if (role === 'reader') {
+                document.getElementById("readerSection").classList.remove("hidden");
+                const selectedCards = lastPatronCards && interpretations[lastPatronCards] ? lastPatronCards.split(", ") : getRandomCards();
+                displayCards("readerCards", selectedCards);
+            } else {
+                document.getElementById("patronSection").classList.remove("hidden");
+            }
+        }
+
+        function submitInterpretation() {
+            const text = document.getElementById("interpretation").value;
+            const cards = Array.from(document.querySelectorAll("#readerCards .card p"), p => p.innerText).join(", ");
+            if (text.trim() !== "") {
+                interpretations[cards] = text;
+                alert("Your interpretation has entered the void.");
+                document.getElementById("interpretation").value = "";
+            }
+        }
+
+        function submitQuestion() {
+            const question = document.getElementById("patronQuestion").value;
+            if (question.trim() !== "") {
+                document.getElementById("patronReading").classList.remove("hidden");
+                const selectedCards = getRandomCards();
+                lastPatronCards = selectedCards.join(", ");
+                displayCards("patronCards", selectedCards);
+                document.getElementById("matchedInterpretation").innerText = interpretations[lastPatronCards] || "No interpretation available yet.";
+            } else {
+                alert("Please enter a question before receiving your reading.");
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
